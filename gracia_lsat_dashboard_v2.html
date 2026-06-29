@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>lsat dashboard. 150 → 170</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream: #f4efe4;
+  --parchment: #ede7d9;
+  --card: #faf6ee;
+  --border: #d4c9b0;
+  --border-light: #e5ddd0;
+  --text: #28231c;
+  --text-mid: #5a5040;
+  --muted: #8a7d6a;
+  --olive: #6b7355;
+  --olive-light: #e8ead8;
+  --olive-mid: #a8b090;
+  --brown: #8b6f4e;
+  --brown-light: #f0e6d8;
+  --mauve: #9b8a9e;
+  --mauve-light: #ede8f0;
+  --rust: #a0624a;
+  --rust-light: #f5e8e2;
+  --check: #6b7355;
+  --shadow: rgba(60,45,25,0.07);
+}
+
+body {
+  background: var(--cream);
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0;
+}
+
+/* TOP BAR */
+.topbar {
+  background: var(--parchment);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.countdown-pill {
+  background: var(--rust-light);
+  border: 1px solid #d4a090;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 12px;
+  color: var(--rust);
+  font-weight: 500;
+}
+
+.date-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* PROGRESS STRIP */
+.progress-strip {
+  background: var(--parchment);
+  border-bottom: 1px solid var(--border-light);
+  padding: 10px 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.progress-track {
+  flex: 1;
+  max-width: 300px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--olive);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+.progress-text {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.week-label-strip {
+  font-size: 12px;
+  color: var(--text-mid);
+  font-weight: 500;
+  margin-left: auto;
+}
+
+/* MAIN LAYOUT */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  grid-template-rows: auto;
+  gap: 0;
+  height: calc(100vh - 95px);
+}
+
+.col-today {
+  padding: 24px 24px 24px 28px;
+  overflow-y: auto;
+  border-right: 1px solid var(--border-light);
+}
+
+.col-right {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.col-week {
+  flex: 1;
+  padding: 20px 20px 16px;
+  overflow-y: auto;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.col-notes {
+  padding: 16px 20px 20px;
+  overflow-y: auto;
+}
+
+/* TODAY PANEL */
+.today-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.today-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 4px;
+  line-height: 1.1;
+}
+
+.today-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.section-label {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+  margin-top: 18px;
+}
+
+.section-label:first-of-type { margin-top: 0; }
+
+.task-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.1s;
+  margin-bottom: 2px;
+}
+
+.task-row:hover { background: var(--parchment); }
+
+.task-row.done { opacity: 0.55; }
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  border-radius: 5px;
+  border: 1.5px solid var(--border);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  transition: all 0.15s;
+}
+
+.task-row.done .checkbox {
+  background: var(--check);
+  border-color: var(--check);
+}
+
+.checkmark {
+  display: none;
+  width: 9px;
+  height: 7px;
+}
+.checkmark path { stroke: white; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.task-row.done .checkmark { display: block; }
+
+.task-info { flex: 1; }
+
+.task-text {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.task-row.done .task-text {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.task-time { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+.task-edit-hint { font-size: 10px; color: var(--border); margin-top: 1px; display: none; }
+.task-row:hover .task-edit-hint { display: block; }
+
+.task-delete {
+  font-size: 14px;
+  color: var(--border);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.1s;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+.task-row:hover .task-delete { opacity: 1; }
+.task-delete:hover { color: var(--rust); }
+
+.task-text-input {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: white;
+  border: 1.5px solid var(--olive);
+  border-radius: 6px;
+  padding: 3px 7px;
+  width: 100%;
+  outline: none;
+  line-height: 1.4;
+}
+
+.add-task-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: var(--muted);
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: 7px;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.add-task-btn:hover { color: var(--olive); border-color: var(--olive); background: var(--olive-light); }
+
+.add-task-input-row {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.add-task-input-row.visible { display: flex; }
+
+.add-task-input {
+  flex: 1;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  background: white;
+  border: 1.5px solid var(--olive);
+  border-radius: 6px;
+  padding: 5px 9px;
+  outline: none;
+}
+
+.add-task-confirm {
+  padding: 5px 10px;
+  background: var(--olive);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+.add-task-cancel {
+  padding: 5px 8px;
+  background: none;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+.divider { height: 1px; background: var(--border-light); margin: 14px 0; }
+
+/* DAY TAG */
+.day-tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 9px;
+  border-radius: 10px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.tag-momentum { background: var(--brown-light); color: var(--brown); }
+.tag-lsat { background: var(--olive-light); color: var(--olive); }
+.tag-rc { background: var(--mauve-light); color: var(--mauve); }
+.tag-rest { background: var(--rust-light); color: var(--rust); }
+
+/* WEEK PANEL */
+.week-heading {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.week-day {
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  background: var(--card);
+  overflow: hidden;
+}
+
+.week-day-header {
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.week-day-header:hover { background: var(--parchment); }
+
+.week-day-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.week-day-name.today-indicator { color: var(--olive); }
+
+.week-day-meta { font-size: 11px; color: var(--muted); }
+
+.week-day-body {
+  display: none;
+  padding: 6px 12px 10px;
+  border-top: 1px solid var(--border-light);
+}
+
+.week-day.open .week-day-body { display: block; }
+
+.mini-task {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+.mini-checkbox {
+  width: 13px;
+  height: 13px;
+  min-width: 13px;
+  border-radius: 3px;
+  border: 1.5px solid var(--border);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.mini-task.done .mini-checkbox { background: var(--check); border-color: var(--check); }
+
+.mini-checkmark { display: none; width: 7px; height: 5px; }
+.mini-checkmark path { stroke: white; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.mini-task.done .mini-checkmark { display: block; }
+
+.mini-text { font-size: 12px; color: var(--text); line-height: 1.3; }
+.mini-task.done .mini-text { text-decoration: line-through; color: var(--muted); }
+
+/* NOTES PANEL */
+.notes-heading {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.note-label {
+  font-size: 11px;
+  color: var(--text-mid);
+  font-weight: 500;
+  margin-bottom: 4px;
+  margin-top: 10px;
+}
+
+.note-label:first-of-type { margin-top: 0; }
+
+textarea {
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: var(--text);
+  background: var(--parchment);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 7px 9px;
+  resize: none;
+  outline: none;
+  line-height: 1.5;
+  min-height: 48px;
+}
+
+textarea:focus { border-color: var(--olive); }
+
+.generate-btn {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 9px;
+  background: var(--olive);
+  color: white;
+  border: none;
+  border-radius: 7px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  text-align: center;
+}
+
+.generate-btn:hover { opacity: 0.85; }
+.generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* AI RESPONSE */
+.ai-response {
+  display: none;
+  margin-top: 12px;
+  background: var(--olive-light);
+  border: 1px solid var(--olive-mid);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.ai-response.visible { display: block; }
+
+.ai-label {
+  font-size: 10px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--olive);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+/* ARCHIVE TAB */
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--parchment);
+}
+
+.tab-btn {
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  color: var(--muted);
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s;
+}
+
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--text); border-bottom-color: var(--olive); font-weight: 500; }
+
+.main-panel { display: none; }
+.main-panel.active { display: grid; grid-template-columns: 1fr 340px; height: calc(100vh - 120px); }
+
+/* ARCHIVE PANEL */
+.archive-panel {
+  display: none;
+  padding: 28px;
+  overflow-y: auto;
+  height: calc(100vh - 120px);
+}
+
+.archive-panel.active { display: block; }
+
+.archive-empty { font-size: 13px; color: var(--muted); font-style: italic; }
+
+.archive-week {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.archive-week-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.archive-week-stat { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+
+.archive-note-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-top: 8px; margin-bottom: 3px; }
+.archive-note-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+.quote-strip {
+  padding: 10px 28px;
+  border-top: 1px solid var(--border-light);
+  background: var(--parchment);
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 12px;
+  color: var(--muted);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-title">lsat dashboard. <span style="color:var(--muted);font-size:16px">150 → 170</span></div>
+  <div class="topbar-right">
+    <div class="date-label" id="today-date"></div>
+    <div class="countdown-pill" id="countdown"></div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('week')">this week</button>
+  <button class="tab-btn" onclick="switchTab('archive')">archive</button>
+</div>
+
+<!-- PROGRESS STRIP -->
+<div class="progress-strip">
+  <div class="progress-track">
+    <div class="progress-fill" id="prog-fill"></div>
+  </div>
+  <div class="progress-text" id="prog-text">0 / 0 tasks this week</div>
+  <div class="week-label-strip">week of june 29</div>
+</div>
+
+<!-- WEEK PANEL -->
+<div class="main-panel active" id="panel-week">
+
+  <!-- TODAY COL -->
+  <div class="col-today" id="today-col"></div>
+
+  <!-- RIGHT COL -->
+  <div class="col-right">
+    <div class="col-week" id="week-col"></div>
+    <div class="col-notes">
+      <div class="notes-heading">weekly notes</div>
+      <div class="note-label">what went well?</div>
+      <textarea id="n-well" rows="2" placeholder="moments of flow, things that clicked..."></textarea>
+      <div class="note-label">what was hard?</div>
+      <textarea id="n-hard" rows="2" placeholder="stuck spots, error patterns..."></textarea>
+      <div class="note-label">demon analytics: top weak areas</div>
+      <textarea id="n-weak" rows="1" placeholder="e.g. necessary assumption, RC inference..."></textarea>
+      <button class="generate-btn" id="gen-btn" onclick="generateNextWeek()">✦ generate next week's plan</button>
+      <div class="ai-response" id="ai-response">
+        <div class="ai-label">your personalized plan</div>
+        <div id="ai-text"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ARCHIVE PANEL -->
+<div class="archive-panel" id="panel-archive"></div>
+
+<!-- QUOTE -->
+<div class="quote-strip">"I saw my life branching out before me like the green fig tree..." — Sylvia Plath</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const DAYS = [
+  {
+    id: 'sun', name: 'Sunday', tag: 'get it done', tagClass: 'tag-momentum', meta: '~1 hr',
+    sections: [
+      { label: 'first things first', tasks: [
+        { text: 'Wake up, drink a full glass of water', time: '5 min' },
+        { text: 'Eat breakfast + make coffee', time: '20 min' }
+      ]},
+      { label: 'the main event', tasks: [
+        { text: 'Argumentative writing practice run', time: '35 min' }
+      ]}
+    ]
+  },
+  {
+    id: 'mon', name: 'Monday', tag: 'test day', tagClass: 'tag-lsat', meta: '~2 hrs',
+    sections: [
+      { label: 'wake up routine', tasks: [
+        { text: 'Water immediately on waking', time: '2 min' },
+        { text: 'Light breakfast + coffee', time: '20 min' },
+        { text: '10–15 min easy LR warmup — questions you already know well', time: '15 min' }
+      ]},
+      { label: 'the real thing', tasks: [
+        { text: 'Proctored argumentative writing section', time: '60 min' },
+        { text: 'Start reading The Loophole — chapter 1, go at your own pace', time: 'open-ended' }
+      ]}
+    ]
+  },
+  {
+    id: 'tue', name: 'Tuesday', tag: 'LR day', tagClass: 'tag-lsat', meta: '~2.5 hrs',
+    sections: [
+      { label: 'momentum builders', tasks: [
+        { text: 'Read a chapter of whatever you\'re reading', time: '20 min' },
+        { text: '4 pages of your magazine or sketchbook', time: '15 min' }
+      ]},
+      { label: 'lsat block', tasks: [
+        { text: 'LSAT Demon: 10 LR questions, slow and deliberate', time: '40 min' },
+        { text: 'Error log: name the specific error type for each wrong answer', time: '20 min' },
+        { text: 'The Loophole: keep reading, note what clicks', time: '30 min' }
+      ]}
+    ]
+  },
+  {
+    id: 'wed', name: 'Wednesday', tag: 'RC day', tagClass: 'tag-rc', meta: '~2.5 hrs',
+    sections: [
+      { label: 'momentum builders', tasks: [
+        { text: '15 min of gesture drawings', time: '15 min' },
+        { text: 'Make your coffee, settle in', time: '10 min' }
+      ]},
+      { label: 'lsat block', tasks: [
+        { text: 'LSAT Demon: 2 RC passages, untimed, annotate as you go', time: '50 min' },
+        { text: 'Error log: focus on inference questions specifically', time: '20 min' },
+        { text: '7Sage: one concept video on RC question types', time: '20 min' }
+      ]}
+    ]
+  },
+  {
+    id: 'thu', name: 'Thursday', tag: 'LR day', tagClass: 'tag-lsat', meta: '~2.5 hrs',
+    sections: [
+      { label: 'momentum builders', tasks: [
+        { text: 'Something small and fun — drawing, reading, music', time: '15 min' }
+      ]},
+      { label: 'lsat block', tasks: [
+        { text: 'LSAT Demon: 10 LR questions, slow and deliberate', time: '40 min' },
+        { text: 'Error log update — are your error types repeating?', time: '20 min' },
+        { text: 'The Loophole: keep going, note what shifts how you think', time: '30 min' }
+      ]}
+    ]
+  },
+  {
+    id: 'fri', name: 'Friday', tag: 'mixed review', tagClass: 'tag-lsat', meta: '~2 hrs',
+    sections: [
+      { label: 'momentum builders', tasks: [
+        { text: 'Something creative — even just 10 min of drawing or editing', time: '10 min' }
+      ]},
+      { label: 'lsat block', tasks: [
+        { text: 'Timed LR section using this week\'s weak spots', time: '35 min' },
+        { text: 'Review errors from the full week\'s error log', time: '30 min' },
+        { text: 'Pull LSAT Demon analytics — note your top 2 weak areas', time: '15 min' }
+      ]}
+    ]
+  },
+  {
+    id: 'sat', name: 'Saturday', tag: 'rest', tagClass: 'tag-rest', meta: '~30 min',
+    sections: [
+      { label: 'light touch', tasks: [
+        { text: 'The Loophole: 20–30 min of casual reading', time: '30 min' },
+        { text: 'Enjoy your day guilt-free — rest is part of the process', time: '' }
+      ]}
+    ]
+  }
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let taskStates = {};
+
+function loadState() {
+  try { const s = localStorage.getItem('lsat_v2_tasks'); if (s) taskStates = JSON.parse(s); } catch(e) {}
+}
+
+function saveState() {
+  try { localStorage.setItem('lsat_v2_tasks', JSON.stringify(taskStates)); } catch(e) {}
+}
+
+function updateProgress() {
+  const keys = Object.keys(taskStates);
+  const total = keys.length;
+  const done = keys.filter(k => taskStates[k]).length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = done + ' / ' + total + ' tasks this week';
+}
+
+// ── DATES ─────────────────────────────────────────────────────────────────────
+function setupDates() {
+  const now = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('today-date').textContent = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate();
+
+  // October 4 2026 as target
+  const target = new Date('2026-10-04');
+  const diff = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+  document.getElementById('countdown').textContent = diff + ' days to october LSAT';
+}
+
+// ── TODAY PANEL ───────────────────────────────────────────────────────────────
+function getTodayDayId() {
+  const map = ['sun','mon','tue','wed','thu','fri','sat'];
+  return map[new Date().getDay()];
+}
+
+function makeTaskRow(key, text, time, onDelete) {
+  if (!(key in taskStates)) taskStates[key] = false;
+
+  const row = document.createElement('div');
+  row.className = 'task-row' + (taskStates[key] ? ' done' : '');
+  row.dataset.key = key;
+
+  const rebuild = (newText, newTime) => {
+    row.innerHTML = `
+      <div class="checkbox"><svg class="checkmark" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1"/></svg></div>
+      <div class="task-info">
+        <div class="task-text">${newText}</div>
+        ${newTime ? `<div class="task-time">${newTime}</div>` : ''}
+        <div class="task-edit-hint">double-click to edit</div>
+      </div>
+      <button class="task-delete" title="remove task">✕</button>
+    `;
+    row.querySelector('.checkbox').addEventListener('click', (e) => {
+      e.stopPropagation();
+      taskStates[key] = !taskStates[key];
+      row.classList.toggle('done', taskStates[key]);
+      const mini = document.querySelector(`[data-mini="${key}"]`);
+      if (mini) mini.classList.toggle('done', taskStates[key]);
+      saveState(); updateProgress();
+    });
+    row.querySelector('.task-delete').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (onDelete) onDelete(key);
+      row.remove();
+      delete taskStates[key];
+      saveState(); updateProgress();
+    });
+    row.addEventListener('dblclick', () => {
+      const currentText = row.querySelector('.task-text').textContent;
+      const currentTime = row.querySelector('.task-time')?.textContent || '';
+      row.innerHTML = `
+        <div class="checkbox" style="opacity:0.3"></div>
+        <div class="task-info" style="display:flex;gap:6px;align-items:center">
+          <input class="task-text-input" value="${currentText}" style="flex:1"/>
+          <input class="task-text-input" value="${currentTime}" style="width:70px" placeholder="time"/>
+          <button class="add-task-confirm">✓</button>
+          <button class="add-task-cancel">✕</button>
+        </div>
+      `;
+      const [textInput, timeInput] = row.querySelectorAll('.task-text-input');
+      textInput.focus();
+      const save = () => {
+        const t = textInput.value.trim() || currentText;
+        const tm = timeInput.value.trim();
+        rebuild(t, tm);
+        saveCustomTasks();
+      };
+      row.querySelector('.add-task-confirm').addEventListener('click', save);
+      row.querySelector('.add-task-cancel').addEventListener('click', () => rebuild(currentText, currentTime));
+      textInput.addEventListener('keydown', e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') rebuild(currentText, currentTime); });
+    });
+  };
+
+  rebuild(text, time);
+  return row;
+}
+
+// custom tasks stored separately
+function loadCustomTasks() {
+  try { return JSON.parse(localStorage.getItem('lsat_v2_custom') || '{}'); } catch(e) { return {}; }
+}
+function saveCustomTasks() {
+  // save current custom task text from DOM
+  const custom = loadCustomTasks();
+  try { localStorage.setItem('lsat_v2_custom', JSON.stringify(custom)); } catch(e) {}
+}
+
+function buildToday() {
+  const todayId = getTodayDayId();
+  const day = DAYS.find(d => d.id === todayId) || DAYS[0];
+  const col = document.getElementById('today-col');
+  const custom = loadCustomTasks();
+
+  col.innerHTML = `
+    <div class="today-eyebrow">today</div>
+    <div class="today-heading">${day.name}<span class="day-tag ${day.tagClass}">${day.tag}</span></div>
+    <div class="today-sub">${day.meta} · open everything up and go</div>
+  `;
+
+  let taskIdx = 0;
+  day.sections.forEach((sec, si) => {
+    if (si > 0) { const d = document.createElement('div'); d.className = 'divider'; col.appendChild(d); }
+    const lbl = document.createElement('div');
+    lbl.className = 'section-label';
+    lbl.textContent = sec.label;
+    col.appendChild(lbl);
+
+    sec.tasks.forEach(task => {
+      const key = `${day.id}_${si}_${taskIdx}`;
+      taskIdx++;
+      col.appendChild(makeTaskRow(key, task.text, task.time));
+    });
+  });
+
+  // custom tasks for today
+  const customKey = `custom_${todayId}`;
+  const todayCustom = custom[customKey] || [];
+  const customContainer = document.createElement('div');
+  customContainer.id = 'custom-tasks-today';
+
+  if (todayCustom.length > 0) {
+    const lbl = document.createElement('div');
+    lbl.className = 'section-label';
+    lbl.style.marginTop = '18px';
+    lbl.textContent = 'added by you';
+    col.appendChild(lbl);
+  }
+
+  todayCustom.forEach((ct, ci) => {
+    const key = `${customKey}_${ci}`;
+    col.appendChild(makeTaskRow(key, ct.text, ct.time, (k) => {
+      const c = loadCustomTasks();
+      c[customKey] = (c[customKey] || []).filter((_, i) => `${customKey}_${i}` !== k);
+      localStorage.setItem('lsat_v2_custom', JSON.stringify(c));
+    }));
+  });
+
+  col.appendChild(customContainer);
+
+  // + add task button
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-task-btn';
+  addBtn.innerHTML = '+ add a task to today';
+  addBtn.style.marginTop = '18px';
+
+  const inputRow = document.createElement('div');
+  inputRow.className = 'add-task-input-row';
+  inputRow.innerHTML = `
+    <input class="add-task-input" placeholder="e.g. 45 min art lesson with friend" />
+    <input class="add-task-input" placeholder="time" style="width:80px"/>
+    <button class="add-task-confirm">add</button>
+    <button class="add-task-cancel">cancel</button>
+  `;
+
+  addBtn.addEventListener('click', () => {
+    addBtn.style.display = 'none';
+    inputRow.classList.add('visible');
+    inputRow.querySelector('.add-task-input').focus();
+  });
+
+  const [textIn, timeIn] = inputRow.querySelectorAll('.add-task-input');
+
+  const confirmAdd = () => {
+    const text = textIn.value.trim();
+    if (!text) return;
+    const time = timeIn.value.trim();
+
+    // save
+    const c = loadCustomTasks();
+    if (!c[customKey]) c[customKey] = [];
+    const ci = c[customKey].length;
+    c[customKey].push({ text, time });
+    localStorage.setItem('lsat_v2_custom', JSON.stringify(c));
+
+    // add "added by you" label if first custom task
+    if (ci === 0) {
+      const lbl = document.createElement('div');
+      lbl.className = 'section-label';
+      lbl.style.marginTop = '18px';
+      lbl.textContent = 'added by you';
+      col.insertBefore(lbl, addBtn);
+    }
+
+    const key = `${customKey}_${ci}`;
+    const newRow = makeTaskRow(key, text, time, (k) => {
+      const cc = loadCustomTasks();
+      cc[customKey] = (cc[customKey] || []).filter((_, i) => `${customKey}_${i}` !== k);
+      localStorage.setItem('lsat_v2_custom', JSON.stringify(cc));
+    });
+    col.insertBefore(newRow, addBtn);
+
+    textIn.value = ''; timeIn.value = '';
+    inputRow.classList.remove('visible');
+    addBtn.style.display = 'flex';
+    saveState(); updateProgress();
+  };
+
+  inputRow.querySelector('.add-task-confirm').addEventListener('click', confirmAdd);
+  inputRow.querySelector('.add-task-cancel').addEventListener('click', () => {
+    inputRow.classList.remove('visible');
+    addBtn.style.display = 'flex';
+    textIn.value = ''; timeIn.value = '';
+  });
+  textIn.addEventListener('keydown', e => { if (e.key === 'Enter') confirmAdd(); if (e.key === 'Escape') inputRow.querySelector('.add-task-cancel').click(); });
+
+  col.appendChild(addBtn);
+  col.appendChild(inputRow);
+  updateProgress();
+}
+
+// ── WEEK PANEL ────────────────────────────────────────────────────────────────
+function buildWeek() {
+  const todayId = getTodayDayId();
+  const col = document.getElementById('week-col');
+  col.innerHTML = '<div class="week-heading">rest of the week</div>';
+
+  DAYS.forEach((day, di) => {
+    if (day.id === todayId) return;
+
+    const card = document.createElement('div');
+    card.className = 'week-day';
+
+    const allTasks = day.sections.flatMap(s => s.tasks);
+    const header = document.createElement('div');
+    header.className = 'week-day-header';
+    header.innerHTML = `
+      <div class="week-day-name">${day.name} <span class="day-tag ${day.tagClass}" style="font-size:10px;padding:1px 7px">${day.tag}</span></div>
+      <div class="week-day-meta">${day.meta}</div>
+    `;
+    header.addEventListener('click', () => card.classList.toggle('open'));
+
+    const body = document.createElement('div');
+    body.className = 'week-day-body';
+
+    let taskIdx = 0;
+    day.sections.forEach((sec, si) => {
+      sec.tasks.forEach(task => {
+        const key = `${day.id}_${si}_${taskIdx}`;
+        taskIdx++;
+        if (!(key in taskStates)) taskStates[key] = false;
+
+        const row = document.createElement('div');
+        row.className = 'mini-task' + (taskStates[key] ? ' done' : '');
+        row.dataset.mini = key;
+        row.innerHTML = `
+          <div class="mini-checkbox"><svg class="mini-checkmark" viewBox="0 0 7 5"><path d="M1 2.5L2.8 4.5L6 1"/></svg></div>
+          <div class="mini-text">${task.text}</div>
+        `;
+        row.addEventListener('click', () => {
+          taskStates[key] = !taskStates[key];
+          row.classList.toggle('done', taskStates[key]);
+          saveState(); updateProgress();
+        });
+        body.appendChild(row);
+      });
+    });
+
+    card.appendChild(header);
+    card.appendChild(body);
+    col.appendChild(card);
+  });
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.main-panel, .archive-panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  if (name === 'week') document.getElementById('panel-week').classList.add('active');
+  else { document.getElementById('panel-archive').classList.add('active'); buildArchive(); }
+}
+
+// ── NOTES ─────────────────────────────────────────────────────────────────────
+function loadNotes() {
+  try {
+    const n = JSON.parse(localStorage.getItem('lsat_v2_notes') || '{}');
+    document.getElementById('n-well').value = n.well || '';
+    document.getElementById('n-hard').value = n.hard || '';
+    document.getElementById('n-weak').value = n.weak || '';
+  } catch(e) {}
+}
+
+['n-well','n-hard','n-weak'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', () => {
+    try {
+      localStorage.setItem('lsat_v2_notes', JSON.stringify({
+        well: document.getElementById('n-well').value,
+        hard: document.getElementById('n-hard').value,
+        weak: document.getElementById('n-weak').value
+      }));
+    } catch(e) {}
+  });
+});
+
+// ── AI GENERATE ───────────────────────────────────────────────────────────────
+async function generateNextWeek() {
+  const well = document.getElementById('n-well').value.trim();
+  const hard = document.getElementById('n-hard').value.trim();
+  const weak = document.getElementById('n-weak').value.trim();
+
+  if (!hard && !weak) {
+    alert('Fill in at least what was hard or your weak areas from Demon analytics first!');
+    return;
+  }
+
+  const btn = document.getElementById('gen-btn');
+  const responseBox = document.getElementById('ai-response');
+  const aiText = document.getElementById('ai-text');
+
+  btn.disabled = true;
+  btn.textContent = '✦ generating your plan...';
+  responseBox.classList.add('visible');
+  aiText.textContent = 'thinking...';
+
+  const prompt = `You are an expert LSAT coach helping a student named Gracia who is aiming for a 170, currently scoring in the 150s. She has ADHD, studies best in the afternoon, and works about 2-3 hours on weekdays and 1 hour each weekend day. She is using LSAT Demon (her primary drilling tool), 7Sage (concept videos), and The Loophole by Ellen Cassidy (LR wrong-answer classification).
+
+Here is her weekly reflection:
+- What went well: ${well || 'not provided'}
+- What was hard: ${hard || 'not provided'}  
+- Top weak areas from Demon analytics: ${weak || 'not provided'}
+
+Based on this, give her a specific, encouraging, actionable study plan for next week. Be concrete — name specific question types to drill, specific chapters or concepts in The Loophole to focus on, and how to adjust her error logging. Keep it warm, direct, and under 250 words. Format it as a short paragraph followed by a day-by-day focus (just Mon-Fri, 1 sentence each). Do not use bullet points for the day-by-day — write it as "Monday: ..., Tuesday: ..." etc.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || 'Something went wrong — try again.';
+    aiText.textContent = text;
+
+    // save to archive
+    try {
+      const keys = Object.keys(taskStates);
+      const done = keys.filter(k => taskStates[k]).length;
+      const archive = JSON.parse(localStorage.getItem('lsat_v2_archive') || '[]');
+      archive.push({
+        date: 'week of june 29',
+        done, total: keys.length,
+        well, hard, weak,
+        plan: text
+      });
+      localStorage.setItem('lsat_v2_archive', JSON.stringify(archive));
+    } catch(e) {}
+
+  } catch(e) {
+    aiText.textContent = 'Could not connect — check your internet and try again.';
+  }
+
+  btn.disabled = false;
+  btn.textContent = '✦ regenerate plan';
+}
+
+// ── ARCHIVE ───────────────────────────────────────────────────────────────────
+function buildArchive() {
+  const panel = document.getElementById('panel-archive');
+  try {
+    const archive = JSON.parse(localStorage.getItem('lsat_v2_archive') || '[]');
+    if (!archive.length) {
+      panel.innerHTML = '<div class="archive-empty">no archived weeks yet — your first week will appear here after you generate a plan on sunday.</div>';
+      return;
+    }
+    panel.innerHTML = '';
+    [...archive].reverse().forEach(w => {
+      const card = document.createElement('div');
+      card.className = 'archive-week';
+      card.innerHTML = `
+        <div class="archive-week-title">${w.date}</div>
+        <div class="archive-week-stat">${w.done} / ${w.total} tasks completed</div>
+        ${w.well ? `<div class="archive-note-label">what went well</div><div class="archive-note-text">${w.well}</div>` : ''}
+        ${w.hard ? `<div class="archive-note-label">what was hard</div><div class="archive-note-text">${w.hard}</div>` : ''}
+        ${w.weak ? `<div class="archive-note-label">weak areas</div><div class="archive-note-text">${w.weak}</div>` : ''}
+        ${w.plan ? `<div class="archive-note-label">generated plan for next week</div><div class="archive-note-text">${w.plan}</div>` : ''}
+      `;
+      panel.appendChild(card);
+    });
+  } catch(e) {
+    panel.innerHTML = '<div class="archive-empty">nothing archived yet.</div>';
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+loadState();
+setupDates();
+buildToday();
+buildWeek();
+loadNotes();
+updateProgress();
+</script>
+</body>
+</html>
